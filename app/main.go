@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"compress/zlib"
+	"crypto/sha1"
 	"fmt"
 	"io"
 	"os"
@@ -63,17 +64,43 @@ func main() {
 			os.Exit(1)
 		}
 
-		//format blob/contentSize/single null byte separation/content
+		//format blob <size>\0<content>
 		//find null byte
 		nullByteIndex := bytes.IndexByte(decompressedBytes, 0)
 		if nullByteIndex == -1 {
 			fmt.Fprintf(os.Stderr, "Error finding null byte in decompressed file\n")
 			os.Exit(1)
 		}
-		//final results are everything after the null byte
+		//content is everything after the null byte
 		resultString := string(decompressedBytes[nullByteIndex+1:])
 		fmt.Print(resultString)
+	case "hash-object":
+		commandOne := os.Args[2]
 
+		if commandOne == "-w" && len(os.Args) < 4 {
+			fmt.Println("Please provide a file path")
+			os.Exit(1)
+		}
+		var filePath string
+		if commandOne == "-w" {
+			filePath = os.Args[3]
+		} else {
+			filePath = os.Args[2]
+		}
+		//compute the sha-1 of the file
+		//the object file is stored with zlib compression, the SHA-1 hash needs to be computed over the "uncompressed" contents of the file, not the compressed version.
+		//The input for the SHA-1 hash is the header (blob <size>\0) + the actual contents of the file, not just the contents of the file.
+		//blob <size>\0<content>
+		fileContent, err := os.ReadFile(filePath)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error reading file: %s\n", err)
+			os.Exit(1)
+		}
+		header := fmt.Sprintf("blob %d\x00", len(fileContent))
+		hashInput := append([]byte(header), fileContent...)
+		hash := sha1.Sum(hashInput)
+
+		fmt.Printf("%x\n", hash)
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown command %s\n", command)
 		os.Exit(1)
