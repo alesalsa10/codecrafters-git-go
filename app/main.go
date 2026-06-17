@@ -108,8 +108,8 @@ func main() {
 			//compress file with zlib
 			var b bytes.Buffer
 			writer := zlib.NewWriter(&b)
-			defer writer.Close()
 			writer.Write(hashInput)
+			writer.Close()
 			//create parent directories if they don't exist'
 			//write to .git/objects/first2/remaining38
 			basePath, filePath := createFilePath(fmt.Sprintf("%x", hash))
