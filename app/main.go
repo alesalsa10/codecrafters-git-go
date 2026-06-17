@@ -2,7 +2,7 @@ package main
 
 import (
 	"bytes"
-	"compress/flate"
+	"compress/zlib"
 	"fmt"
 	"io"
 	"os"
@@ -44,14 +44,17 @@ func main() {
 		hash := os.Args[3]
 		path := ".git/objects/" + hash[:2] + "/" + hash[2:]
 		//read file contents
-		content, err := os.ReadFile(path)
-		fmt.Println(content)
+		uncompressedContent, err := os.ReadFile(path)
 		if err != nil {
 			fmt.Println(os.Stderr, "Error reading file: %s\n", err)
 			os.Exit(1)
 		}
 		//decompress file with zlib
-		reader := flate.NewReader(bytes.NewReader(content))
+		reader, err := zlib.NewReader(bytes.NewReader(uncompressedContent))
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error decompressing file: %s\n", err)
+			os.Exit(1)
+		}
 		//defer will close the reader before the function returns
 		defer reader.Close()
 		decompressedBytes, err := io.ReadAll(reader)
@@ -60,7 +63,7 @@ func main() {
 			os.Exit(1)
 		}
 		resultString := string(decompressedBytes)
-		fmt.Fprint(os.Stdout, resultString)
+		fmt.Println(resultString)
 
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown command %s\n", command)
