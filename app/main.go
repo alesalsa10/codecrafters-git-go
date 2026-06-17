@@ -64,7 +64,7 @@ func main() {
 			os.Exit(1)
 		}
 		resultString := string(decompressedBytes)
-		fmt.Println(resultString)
+		fmt.Fprint(os.Stdout, resultString)
 
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown command %s\n", command)
