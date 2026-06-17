@@ -37,9 +37,9 @@ func main() {
 		file := os.Args[2]
 		//read file contents
 		content, err := os.ReadFile(file)
-		fmt.Println(os.Stderr, content)
+		fmt.Println(content)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error reading file: %s\n", err)
+			fmt.pr(os.Stderr, "Error reading file: %s\n", err)
 			os.Exit(1)
 		}
 		//decompress file with zlib
