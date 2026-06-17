@@ -62,7 +62,16 @@ func main() {
 			fmt.Fprintf(os.Stderr, "Error decompressing file: %s\n", err)
 			os.Exit(1)
 		}
-		resultString := string(decompressedBytes)
+
+		//format blob/contentSize/single null byte separation/content
+		//find null byte
+		nullByteIndex := bytes.IndexByte(decompressedBytes, 0)
+		if nullByteIndex == -1 {
+			fmt.Fprintf(os.Stderr, "Error finding null byte in decompressed file\n")
+			os.Exit(1)
+		}
+		//final results are everything after the null byte
+		resultString := string(decompressedBytes[nullByteIndex+1:])
 		fmt.Print(resultString)
 
 	default:
