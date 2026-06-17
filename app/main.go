@@ -58,12 +58,13 @@ func main() {
 		}
 		//defer will close the reader before the function returns
 		defer reader.Close()
-		decompressedContent, err := io.ReadAll(reader)
+		decompressedBytes, err := io.ReadAll(reader)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error decompressing file: %s\n", err)
 			os.Exit(1)
 		}
-		fmt.Println(os.Stdout, decompressedContent)
+		resultString := string(decompressedBytes)
+		fmt.Println(resultString)
 
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown command %s\n", command)
