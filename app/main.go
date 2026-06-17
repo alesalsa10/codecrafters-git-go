@@ -39,17 +39,20 @@ func main() {
 		content, err := os.ReadFile(file)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error reading file: %s\n", err)
+			os.Exit(1)
 		}
 		//decompress file with zlib
 		reader, err := zlib.NewReader(bytes.NewReader(content))
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error decompressing file: %s\n", err)
+			os.Exit(1)
 		}
 		//defer will close the reader before the function returns
 		defer reader.Close()
 		decompressedContent, err := io.ReadAll(reader)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error decompressing file: %s\n", err)
+			os.Exit(1)
 		}
 		fmt.Println(os.Stdout, decompressedContent)
 
