@@ -104,12 +104,13 @@ func main() {
 
 		if commandOne == "-w" {
 			//compress file with zlib
-			writer := zlib.NewWriter(os.Stdout)
+			var b bytes.Buffer
+			writer := zlib.NewWriter(&b)
 			defer writer.Close()
 			writer.Write(hashInput)
 			//write to .git/objects/first2/remaining38
 			storagePath := createFilePath(fmt.Sprintf("%x", hash))
-			if err := os.WriteFile(storagePath, hashInput, 0644); err != nil {
+			if err := os.WriteFile(storagePath, b.Bytes(), 0644); err != nil {
 				fmt.Fprintf(os.Stderr, "Error writing file: %s\n", err)
 			}
 
