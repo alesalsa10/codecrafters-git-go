@@ -7,12 +7,14 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 )
 
-func createFilePath(hash string) string {
+func createFilePath(hash string) (basePath string, filePath string) {
 	//first 2 chars → a subdirectory under .git/objects/  remaining 38 chars → the filename inside it
-	path := ".git/objects/" + hash[:2] + "/" + hash[2:]
-	return path
+	basePath = ".git/objects/" + hash[:2]
+	filePath = hash[2:]
+	return basePath, filePath
 }
 
 // Usage: your_program.sh <command> <arg1> <arg2> ...
@@ -108,8 +110,13 @@ func main() {
 			writer := zlib.NewWriter(&b)
 			defer writer.Close()
 			writer.Write(hashInput)
+			//create parent directories if they don't exist'
 			//write to .git/objects/first2/remaining38
-			storagePath := createFilePath(fmt.Sprintf("%x", hash))
+			basePath, filePath := createFilePath(fmt.Sprintf("%x", hash))
+			if err := os.MkdirAll(basePath, 0755); err != nil {
+				fmt.Fprintf(os.Stderr, "Error creating directory: %s\n", err)
+			}
+			storagePath := filepath.Join(basePath, filePath)
 			if err := os.WriteFile(storagePath, b.Bytes(), 0644); err != nil {
 				fmt.Fprintf(os.Stderr, "Error writing file: %s\n", err)
 			}
