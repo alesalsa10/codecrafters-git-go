@@ -87,18 +87,33 @@ func main() {
 		} else {
 			filePath = os.Args[2]
 		}
-		//compute the sha-1 of the file
-		//the object file is stored with zlib compression, the SHA-1 hash needs to be computed over the "uncompressed" contents of the file, not the compressed version.
-		//The input for the SHA-1 hash is the header (blob <size>\0) + the actual contents of the file, not just the contents of the file.
+		//the object file is stored with zlib compression,
+		//SHA-1 hash needs to be computed over the "uncompressed" contents of the file, not the compressed version.
+		//input for the SHA-1 hash is the header (blob <size>\0) + the actual contents of the file,
 		//blob <size>\0<content>
-		fileContent, err := os.ReadFile(filePath)
+
+		//build the hash
+		fileBytes, err := os.ReadFile(filePath)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error reading file: %s\n", err)
 			os.Exit(1)
 		}
-		header := fmt.Sprintf("blob %d\x00", len(fileContent))
-		hashInput := append([]byte(header), fileContent...)
+		header := fmt.Sprintf("blob %d\x00", len(fileBytes))
+		hashInput := append([]byte(header), fileBytes...)
 		hash := sha1.Sum(hashInput)
+
+		if commandOne == "-w" {
+			//compress file with zlib
+			writer := zlib.NewWriter(os.Stdout)
+			defer writer.Close()
+			writer.Write(hashInput)
+			//write to .git/objects/first2/remaining38
+			storagePath := createFilePath(fmt.Sprintf("%x", hash))
+			if err := os.WriteFile(storagePath, hashInput, 0644); err != nil {
+				fmt.Fprintf(os.Stderr, "Error writing file: %s\n", err)
+			}
+
+		}
 
 		fmt.Printf("%x\n", hash)
 	default:
