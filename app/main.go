@@ -1,7 +1,10 @@
 package main
 
 import (
+	"bytes"
+	"compress/zlib"
 	"fmt"
+	"io"
 	"os"
 )
 
@@ -30,6 +33,25 @@ func main() {
 		}
 
 		fmt.Println("Initialized git directory")
+	case "cat-file":
+		file := os.Args[2]
+		//read file contents
+		content, err := os.ReadFile(file)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error reading file: %s\n", err)
+		}
+		//decompress file with zlib
+		reader, err := zlib.NewReader(bytes.NewReader(content))
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error decompressing file: %s\n", err)
+		}
+		//defer will close the reader before the function returns
+		defer reader.Close()
+		decompressedContent, err := io.ReadAll(reader)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error decompressing file: %s\n", err)
+		}
+		fmt.Println(os.Stdout, decompressedContent)
 
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown command %s\n", command)
