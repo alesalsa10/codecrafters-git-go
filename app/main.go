@@ -8,6 +8,12 @@ import (
 	"os"
 )
 
+func createFilePath(hash string) string {
+	//first 2 chars → a subdirectory under .git/objects/  remaining 38 chars → the filename inside it
+	path := ".git/objects/" + hash[:2] + "/" + hash[2:]
+	return path
+}
+
 // Usage: your_program.sh <command> <arg1> <arg2> ...
 func main() {
 	// You can use print statements as follows for debugging, they'll be visible when running tests.
@@ -34,9 +40,11 @@ func main() {
 
 		fmt.Println("Initialized git directory")
 	case "cat-file":
-		file := os.Args[2]
+		//command structure is cat-file <type> <hash>
+		hash := os.Args[3]
+		path := ".git/objects/" + hash[:2] + "/" + hash[2:]
 		//read file contents
-		content, err := os.ReadFile(file)
+		content, err := os.ReadFile(path)
 		fmt.Println(content)
 		if err != nil {
 			fmt.Println(os.Stderr, "Error reading file: %s\n", err)
