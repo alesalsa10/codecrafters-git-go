@@ -2,7 +2,7 @@ package main
 
 import (
 	"bytes"
-	"compress/zlib"
+	"compress/flate"
 	"fmt"
 	"io"
 	"os"
@@ -51,11 +51,7 @@ func main() {
 			os.Exit(1)
 		}
 		//decompress file with zlib
-		reader, err := zlib.NewReader(bytes.NewReader(content))
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error decompressing file: %s\n", err)
-			os.Exit(1)
-		}
+		reader := flate.NewReader(bytes.NewReader(content))
 		//defer will close the reader before the function returns
 		defer reader.Close()
 		decompressedBytes, err := io.ReadAll(reader)
