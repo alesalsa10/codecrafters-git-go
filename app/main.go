@@ -37,6 +37,7 @@ func main() {
 		file := os.Args[2]
 		//read file contents
 		content, err := os.ReadFile(file)
+		fmt.Println(os.Stderr, content)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error reading file: %s\n", err)
 			os.Exit(1)
