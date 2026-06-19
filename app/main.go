@@ -163,25 +163,26 @@ func main() {
 		//only need name
 		var nameBytes []byte
 
-		for i := 0; i < len(decompressedBytes); {
-			spaceIndex := bytes.IndexByte(decompressedBytes[i:], ' ')
-			if spaceIndex == -1 {
-				break
+		isFirstSpaceInSlice := false
+		spaceIndex := -1
+
+		for i := 0; i < len(decompressedBytes); i++ {
+			if decompressedBytes[i] == ' ' && !isFirstSpaceInSlice {
+				isFirstSpaceInSlice = true
+				spaceIndex = i
 			}
-			spaceIndex += i
 
-			nullByteIndex := bytes.IndexByte(decompressedBytes[spaceIndex+1:], 0)
-			if nullByteIndex == -1 {
-				fmt.Fprintf(os.Stderr, "Error finding null byte in decompressed file\n")
-				os.Exit(1)
+			if isFirstSpaceInSlice && decompressedBytes[i] == 0 {
+				nameBytes = append(nameBytes, decompressedBytes[spaceIndex+1:i]...)
+				nameBytes = append(nameBytes, '\n')
+
+				// Skip the 20 raw SHA bytes after the null byte
+				i += 20
+
+				// Reset for the next tree entry
+				isFirstSpaceInSlice = false
+				spaceIndex = -1
 			}
-			nullByteIndex += spaceIndex + 1
-
-			nameBytes = append(nameBytes, decompressedBytes[spaceIndex+1:nullByteIndex]...)
-			nameBytes = append(nameBytes, '\n')
-
-			// Skip: name + null byte + 20 raw SHA bytes
-			i = nullByteIndex + 1 + 20
 		}
 
 		fmt.Print(string(nameBytes))
